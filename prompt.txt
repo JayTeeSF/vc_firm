@@ -1,0 +1,46 @@
+Prompt for Building a VC Investment Game
+
+Overview:
+You are tasked with developing an interactive web-based VC Investment Game where players act as venture capitalists (VCs), making investment decisions based on startup pitches. Players can review multiple metrics, invest in or pass on startups, and their portfolio grows or shrinks based on how well their chosen startups perform. The game should include dynamic elements like news events that affect sectors and show clear, impactful outcomes of investments.
+
+Key Features:
+Startups and Metrics:
+Each startup will display the following metrics in a visually engaging manner using charts:
+
+Market Size (in millions): Reflects the target market.
+Team Experience (scale 1-10): Reflects the startup team's quality.
+Financials (in millions): Reflects the company's current profit/loss. Positive numbers mean profitability; negative numbers indicate losses.
+Investment Details:
+Each startup pitch should include a requested investment amount, which the player can view before choosing to invest. The game should prevent over-investment (i.e., if the requested amount exceeds the available capital). If a player does not have enough funds, the game should automatically allow for partial investment and inform the player of the remaining capital being invested.
+
+News Events:
+Random news events should appear during the game, affecting specific sectors (e.g., Tech, Healthcare, Energy). These events should positively or negatively impact the financials of all companies in the affected sector, dynamically adjusting the returns in the portfolio (a one-time increase / decrease when the news is displayed).
+
+Portfolio Management:
+Players should be able to see all companies they’ve invested in within the Portfolio section. This section must clearly show:
+
+Company name.
+Sector.
+Market Size.
+Team Experience.
+Current Financials (showing gains or losses).
+Capital and Firm Valuation:
+The player's capital and overall firm valuation should be prominently displayed. Capital will decrease with each investment, while firm valuation will reflect the growth or decline of the portfolio over time.
+
+Timing Mechanism:
+A countdown timer (default: 30 seconds) should be displayed for each startup pitch. The timer should pause when the player makes a decision (either Invest or Pass). If the timer runs out without a decision, the game should auto-pass the startup and move on to the next.
+
+What To Do:
+Charts and UI: Each startup pitch should dynamically render its respective charts (Market Size, Team Experience, Financials). Ensure the charts clear between different startups to avoid stacking data from previous pitches.
+Requested Investment: Display the requested investment clearly with each new pitch, ensuring that it resets for each new startup.
+Partial Investments: If the player has less capital than the requested investment, allow partial investment of whatever funds remain. Do not block the game if full investment is impossible.
+Dynamic News: Incorporate news events that affect sector performance. Ensure that when a news event occurs, it modifies the financial returns of the companies the VC (player) has invested-in within the same sector as the announcement (no impact on future startups).
+Portfolio Updates: Ensure the portfolio reflects ongoing performance changes based on news events or sector performance. Show gains and losses clearly in the Portfolio section.
+Decision Handling: Once the player clicks Invest or Pass, display appropriate messages (e.g., "You invested X amount in this startup" or "You passed on this startup") and move to the next startup without errors.
+What Not to Do:
+No Data Stacking: Ensure that the requested investments or charts do not pile up when a new startup is shown. Always clear the old data before displaying the new.
+Do Not Block on Full Investment: Do not stop the game if the requested investment exceeds the player's available capital. Implement partial investments instead.
+No Unused News: Ensure that news events always trigger a sector impact. Do not display news if there’s no effect on the financials.
+Avoid Timer Errors: Ensure the timer resets correctly for each startup and pauses when an investment or pass is made.
+No Unclear Investment Details: Do not delay showing the requested investment until after the player clicks Invest. The requested investment must be part of the pitch upfront.
+

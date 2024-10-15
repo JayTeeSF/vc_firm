@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VC Investment Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>VC Investment Game</h1>
+            <p>Firm Valuation: <span id="firmValuation">$1M</span></p>
+            <p>Capital: <span id="capital">$500K</span></p>
+            <button id="nextStartup">Next Startup</button>
+            <button id="showInstructions">?</button>
+        </header>
+
+        <div id="startup-container">
+            <h2>Startup Pitch</h2>
+            <div id="charts-container">
+                <canvas id="marketSizeChart" width="100" height="100"></canvas>
+                <canvas id="teamExperienceChart" width="100" height="100"></canvas>
+                <canvas id="financialsChart" width="100" height="100"></canvas>
+            </div>
+            <p id="sector">Sector: Tech</p>
+            <div id="investment-decision">
+                <button id="invest" disabled>Invest</button>
+                <button id="pass" disabled>Pass</button>
+            </div>
+
+            <div id="timer">Time Left: <span id="timeLeft">30</span>s</div>
+        </div>
+
+        <div id="portfolio-container">
+            <h2>Your Portfolio</h2>
+            <ul id="portfolio-list"></ul>
+        </div>
+
+        <div id="news-container">
+            <h2>News</h2>
+            <ul id="news-list"></ul>
+        </div>
+
+        <div id="instructions-modal" style="display: none;">
+          <div class="modal-content">
+            <h2>Welcome to the VC Investment Game!</h2>
+            <p><strong>Market Size:</strong> The total size of the market the startup is targeting (in millions).</p>
+            <p><strong>Team Experience:</strong> The quality of the startup's team (scale of 1-10).</p>
+            <p><strong>Financials:</strong> The startup's current profitability. Positive numbers mean they're making money, negative numbers mean they're losing money.</p>
+            <p><strong>Sector:</strong> Each startup belongs to a specific industry. Diversify your portfolio to protect yourself from bad news in specific sectors.</p>
+            <p><strong>Investing:</strong> If you believe in a startup, invest. If their financials improve, you'll make money. If not, you'll lose your investment.</p>
+            <p><strong>Reinvestment:</strong> Successful companies will seek further rounds of funding (Series-B, C, IPO).</p>
+            <button id="closeInstructions">Start Game</button>
+          </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
