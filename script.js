@@ -214,7 +214,7 @@ function nextStartup() {
             applyRandomNewsEvent();
             startTimer();
         } else {
-            checkGameOver();
+            checkGameOver(); // Check if the game should end
         }
     } catch (error) {
         console.error("Error during next startup:", error);
@@ -332,48 +332,82 @@ elements.investButton.addEventListener('click', debounce(() => {
     }
 }, 300)); // Debounced click event
 
-// Monitor portfolio after pitches are complete (separate timer from pitch)
+// Monitor portfolio growth with fast updates and final resolution after 30 seconds
 function monitorPortfolio() {
     monitoringPortfolio = true;
-    let monitorCountdown = 30; // Run monitoring for 30 seconds
+    const fastInterval = 30;  // Interval of 30ms for fast updates
+    let monitorCountdown = 1000;  // Countdown timer for 30 seconds (1000 at 30ms interval)
 
-    portfolioTimer = setInterval(() => {
-        monitorCountdown--;
+    const monitorInterval = setInterval(() => {
+        let allResolved = true;
 
-        // Here you could introduce fast updates (but only for a set time)
+        portfolioInstance.startups.forEach(startup => {
+            const { investedAmount, teamExperience, financials, goal } = startup;
+
+            // Calculate growth factor with a higher chance of success for better teams
+            let growthFactor = (Math.random() * 10 - 5);  // Base random growth factor (-5 to 5)
+            const successChance = teamExperience / 10;  // Chance of success based on team experience
+            const growthAdjustment = Math.random() < successChance ? Math.random() * 5 : Math.random() * -5;
+            growthFactor += growthAdjustment;
+
+            const progressThreshold = 0.10;  // 10% of the target goal for early success
+
+            // Early resolution (within 20 seconds): If financials are near goal, mark as successful
+            if (monitorCountdown <= 20 && financials / goal >= progressThreshold) {
+                startup.financials = goal;
+                capital += startup.financials;
+                alert(`${startup.name} reached its target quickly!`);
+            }
+
+            // Continue to update financials dynamically until the final resolution
+            if (financials > 0 && financials < investedAmount * 100) {
+                startup.financials += growthFactor;
+                allResolved = false;
+            } else if (financials >= investedAmount * 100) {
+                capital += startup.financials;
+                alert(`Unicorn! ${startup.name} returned 100x its investment!`);
+            }
+        });
+
+        // Update the portfolio visually and update capital display
         updatePortfolio();
+        elements.capitalDisplay.innerText = `$${capital.toLocaleString()}K`;
 
+        // Countdown mechanism to transition to final resolution after 30 seconds
+        monitorCountdown--;
         if (monitorCountdown <= 0) {
-            clearInterval(portfolioTimer);
-            resolveRemainingPortfolio(); // After 30s, resolve remaining companies
+            clearInterval(monitorInterval);  // Stop the fast updates
+            resolveRemainingPortfolio();  // Move to final resolution of remaining startups
         }
-    }, 1000);
+
+    }, fastInterval);  // Fast updates every 30ms
 }
 
-// Resolve remaining companies after monitoring period
+// Resolve remaining companies after 30-second monitoring period
 function resolveRemainingPortfolio() {
     portfolioInstance.startups.forEach(startup => {
         const { financials, goal } = startup;
 
-        // Check if the company is near its goal (e.g., within 10%)
+        // Final resolution: Check if company is within 10% of its goal
         const nearGoalThreshold = 0.10;
         if (financials / goal >= nearGoalThreshold) {
-            startup.financials = goal; // Mark as successful
-            capital += startup.financials; // Add financials to capital
+            startup.financials = goal;
+            capital += startup.financials;
             alert(`${startup.name} reached its target successfully!`);
         } else {
-            // Give the company a 30% chance of success
+            // Final 30% chance of random success
             if (Math.random() < 0.3) {
                 startup.financials = goal;
-                capital += startup.financials; // Add gains
+                capital += startup.financials;
                 alert(`${startup.name} succeeded randomly!`);
             } else {
-                startup.financials = 0; // Company failed
+                startup.financials = 0;
                 alert(`${startup.name} failed to reach its target.`);
             }
         }
     });
 
+    // After resolving all startups, update portfolio and handle end of round
     updatePortfolio();
     handleEndOfRound();
 }
@@ -435,8 +469,19 @@ function resetGame() {
     stopTimer(); // Stop any running timer
 }
 
-// Event Listeners
-elements.nextStartupButton.addEventListener('click', nextStartup);
-elements.showInstructionsButton.addEventListener('click', () => {
-    elements.instructionsModal.style.display = elements.instructionsModal.style.display === 'none' || elements.instructionsModal.style.display === '' ? 'flex' : 'none';
-});
+// Added this new function to handle game over checks
+function checkGameOver() {
+    if (capital <= 0 && portfolioInstance.allFailed()) {
+        alert("You lose: all your investments failed.");
+        elements.nextStartupButton.disabled = true;
+        elements.investButton.disabled = true;
+        elements.passButton.disabled = true;
+        clearInterval(portfolioTimer);  // Stop the portfolio monitoring timer
+    } else if (portfolioInstance.hasIPO()) {
+        alert("You win!!! Your company successfully IPO'd.");
+        elements.nextStartupButton.disabled = true;
+        elements.investButton.disabled = true;
+        elements.passButton.disabled = true;
+        clearInterval(portfolioTimer);  // Stop the portfolio monitoring timer
+    }
+}
