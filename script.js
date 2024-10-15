@@ -40,7 +40,7 @@ const elements = {
     newsSection: document.getElementById('news-list'),
     instructionsModal: document.getElementById('instructions-modal'),
     showInstructionsButton: document.getElementById('showInstructions'),
-    closeInstructionsButton: document.getElementById('closeInstructions'),
+    // closeInstructionsButton: document.getElementById('closeInstructions'),
     startButton: document.getElementById('startButton') // Added start button element
 };
 
@@ -331,6 +331,7 @@ elements.investButton.addEventListener('click', debounce(() => {
 // Timer function to trigger resolution after 30 seconds
 function monitorPortfolio() {
     monitoringPortfolio = true;
+    const fastInterval = 30; // Interval of 30ms
     const monitorInterval = setInterval(() => {
         let allResolved = true;
         portfolioInstance.startups.forEach(startup => {
@@ -338,33 +339,28 @@ function monitorPortfolio() {
 
             // Calculate growth factor with a higher chance of success for better teams
             let growthFactor = (Math.random() * 10 - 5); // Base random growth factor (-5 to 5)
-
-            // Adjust growth based on team experience: higher experience teams tend to grow more positively
-            const successChance = teamExperience / 10; // 9/10 = 90% chance of positive growth
+            const successChance = teamExperience / 10;
             const growthAdjustment = Math.random() < successChance ? Math.random() * 5 : Math.random() * -5;
-
             growthFactor += growthAdjustment;
 
-            // Evaluate progress after 30 seconds
-            const progressThreshold = 0.10; // e.g., 10% of target goal
-            if (countdown === 0 && financials / goal >= progressThreshold) {
-                // Mark as success if threshold reached
+            const progressThreshold = 0.10; // 10% of the target goal
+            if (countdown <= 20 && financials / goal >= progressThreshold) {
                 startup.financials = goal;
-                capital += startup.financials; // Add gains
-                alert(`${startup.name} reached its target!`);
+                capital += startup.financials;
+                alert(`${startup.name} reached its target quickly!`);
             } else if (countdown === 0) {
-                // Random resolution (30% chance of success)
+                // Final resolution: 30% chance of success after 30 seconds
                 if (Math.random() < 0.3) {
                     startup.financials = goal;
-                    capital += startup.financials; // Add gains
+                    capital += startup.financials;
                     alert(`${startup.name} succeeded randomly!`);
                 } else {
-                    startup.financials = 0; // Company failed
-                    alert(`${startup.name} failed to reach its target.`);
+                    startup.financials = 0;
+                    alert(`${startup.name} failed.`);
                 }
             }
 
-            // If the company hasn't yet reached 100x the investment, continue growing
+            // Continue growth if not yet successful
             if (financials > 0 && financials < investedAmount * 100) {
                 startup.financials += growthFactor;
                 allResolved = false;
@@ -377,11 +373,12 @@ function monitorPortfolio() {
         updatePortfolio();
         elements.capitalDisplay.innerText = `$${capital.toLocaleString()}K`;
 
+        // Check if all companies are resolved
         if (allResolved) {
             clearInterval(monitorInterval);
             handleEndOfRound();
         }
-    }, 30); // fast ms
+    }, fastInterval); // 30ms updates
 }
 
 // End of round handling
@@ -411,12 +408,10 @@ elements.nextStartupButton.addEventListener('click', nextStartup);
 elements.showInstructionsButton.addEventListener('click', () => {
     elements.instructionsModal.style.display = elements.instructionsModal.style.display === 'none' || elements.instructionsModal.style.display === '' ? 'flex' : 'none';
 });
-elements.closeInstructionsButton.addEventListener('click', () => elements.instructionsModal.style.display = 'none');
+// elements.closeInstructionsButton.addEventListener('click', () => elements.instructionsModal.style.display = 'none');
 
 // Ensure Start button is always visible, and triggers the first pitch
 elements.startButton.addEventListener('click', () => {
-  // elements.startButton.style.display = 'none'; // Hide the start button once clicked
-  // nextStartup(); // Start the first startup pitch
   if (gameStarted) {
     const confirmReset = confirm("Are you sure you want to reset the game?");
     if (confirmReset) {
@@ -434,7 +429,6 @@ function startGame() {
 }
 
 function resetGame() {
-    // Reset game state and variables
     capital = initialCapital;
     firmValuation = 1000000;
     currentRound = 1;
