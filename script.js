@@ -6,6 +6,7 @@ let currentRound = 1;
 let monitoringPortfolio = false;
 let countdown = 30;
 let currentTimer;
+let portfolioTimer; // New timer for monitoring portfolio separately
 let gameStarted = false;
 let portfolio = [];
 let activeCharts = [];
@@ -40,8 +41,7 @@ const elements = {
     newsSection: document.getElementById('news-list'),
     instructionsModal: document.getElementById('instructions-modal'),
     showInstructionsButton: document.getElementById('showInstructions'),
-    closeInstructionsButton: document.getElementById('closeInstructions'),
-    startButton: document.getElementById('startButton') // Added start button element
+    startButton: document.getElementById('startButton') // Start button element
 };
 
 // GameError for better error handling
@@ -223,9 +223,8 @@ function nextStartup() {
 }
 
 function createRandomStartup() {
-    const seriesRound = seriesRounds[`Series-${String.fromCharCode(64 + currentRound)}`] || {
-        minInvestment: 5000000, maxInvestment: 10000000, targetMultiplier: 1000
-    };
+    const seriesRound = seriesRounds[`Series-${String.fromCharCode(64 + currentRound)}`];
+    if (!seriesRound) throw new GameError("Invalid series round data", { currentRound });
 
     const sector = sectors[Math.floor(Math.random() * sectors.length)];
     const name = generateUniqueStartupName();
@@ -289,7 +288,7 @@ function startTimer() {
         elements.timeLeftDisplay.innerText = countdown;
         if (countdown <= 0) {
             clearInterval(currentTimer);
-            resolvePortfolio();
+            handleTimeout();
         }
     }, 1000);
 }
@@ -298,8 +297,61 @@ function stopTimer() {
     clearInterval(currentTimer);
 }
 
-// Resolve the portfolio after 30s
-function resolvePortfolio() {
+// Timer-related timeout handler for pitch
+function handleTimeout() {
+    alert("Time's up! Moving to the next startup.");
+    nextStartup();
+}
+
+// Handle investments and button click
+elements.investButton.addEventListener('click', debounce(() => {
+    let investAmount = currentStartup.investmentRequired;
+
+    if (capital <= 0) {
+        alert("You don't have any capital left to invest!");
+        return;
+    }
+
+    if (capital < investAmount) {
+        investAmount = capital; // Partial investment if not enough capital
+        alert(`Partial investment! You invested $${investAmount.toLocaleString()} in this startup!`);
+    } else {
+        alert(`You invested $${investAmount.toLocaleString()} in this startup!`);
+    }
+
+    portfolioInstance.addStartup({ ...currentStartup, investedAmount: investAmount });
+    capital -= investAmount;
+    elements.capitalDisplay.innerText = `$${capital.toLocaleString()}K`;
+
+    elements.investButton.disabled = true;
+
+    if (capital <= 0 && !monitoringPortfolio) {
+        monitorPortfolio(); // Start monitoring portfolio when capital hits 0
+    } else {
+        nextStartup(); // Automatically move to the next startup
+    }
+}, 300)); // Debounced click event
+
+// Monitor portfolio after pitches are complete (separate timer from pitch)
+function monitorPortfolio() {
+    monitoringPortfolio = true;
+    let monitorCountdown = 30; // Run monitoring for 30 seconds
+
+    portfolioTimer = setInterval(() => {
+        monitorCountdown--;
+
+        // Here you could introduce fast updates (but only for a set time)
+        updatePortfolio();
+
+        if (monitorCountdown <= 0) {
+            clearInterval(portfolioTimer);
+            resolveRemainingPortfolio(); // After 30s, resolve remaining companies
+        }
+    }, 1000);
+}
+
+// Resolve remaining companies after monitoring period
+function resolveRemainingPortfolio() {
     portfolioInstance.startups.forEach(startup => {
         const { financials, goal } = startup;
 
@@ -349,36 +401,6 @@ function handleEndOfRound() {
     }
 }
 
-// Handle investments and button click
-elements.investButton.addEventListener('click', debounce(() => {
-    let investAmount = currentStartup.investmentRequired;
-
-    if (capital <= 0) {
-        alert("You don't have any capital left to invest!");
-        return;
-    }
-
-    if (capital < investAmount) {
-        investAmount = capital; // Partial investment if not enough capital
-        alert(`Partial investment! You invested $${investAmount.toLocaleString()} in this startup!`);
-    } else {
-        alert(`You invested $${investAmount.toLocaleString()} in this startup!`);
-    }
-
-    portfolioInstance.addStartup({ ...currentStartup, investedAmount: investAmount });
-    capital -= investAmount;
-    elements.capitalDisplay.innerText = `$${capital.toLocaleString()}K`;
-
-    elements.investButton.disabled = true;
-
-    if (capital <= 0 && !monitoringPortfolio) {
-        monitorPortfolio(); // Start monitoring portfolio when capital hits 0
-        stopTimer();
-    } else {
-        nextStartup(); // Automatically move to the next startup
-    }
-}, 300));
-
 // Ensure Start button is always visible, and triggers the first pitch
 elements.startButton.addEventListener('click', () => {
     if (gameStarted) {
@@ -398,6 +420,7 @@ function startGame() {
 }
 
 function resetGame() {
+    // Reset game state and variables
     capital = initialCapital;
     firmValuation = 1000000;
     currentRound = 1;
@@ -417,4 +440,3 @@ elements.nextStartupButton.addEventListener('click', nextStartup);
 elements.showInstructionsButton.addEventListener('click', () => {
     elements.instructionsModal.style.display = elements.instructionsModal.style.display === 'none' || elements.instructionsModal.style.display === '' ? 'flex' : 'none';
 });
-elements.closeInstructionsButton.addEventListener('click', () => elements.instructionsModal.style.display = 'none');
