@@ -328,34 +328,47 @@ elements.investButton.addEventListener('click', debounce(() => {
 }, 300)); // Debounced click event
 
 // Monitor portfolio growth
+// Timer function to trigger resolution after 30 seconds
 function monitorPortfolio() {
     monitoringPortfolio = true;
     const monitorInterval = setInterval(() => {
         let allResolved = true;
         portfolioInstance.startups.forEach(startup => {
-            const { investedAmount, teamExperience, financials } = startup;
+            const { investedAmount, teamExperience, financials, goal } = startup;
 
             // Calculate growth factor with a higher chance of success for better teams
             let growthFactor = (Math.random() * 10 - 5); // Base random growth factor (-5 to 5)
-            
+
             // Adjust growth based on team experience: higher experience teams tend to grow more positively
             const successChance = teamExperience / 10; // 9/10 = 90% chance of positive growth
             const growthAdjustment = Math.random() < successChance ? Math.random() * 5 : Math.random() * -5;
 
-            // Combine growth factors (base growth + team experience bias)
             growthFactor += growthAdjustment;
 
-            // Additional adjustment: teams near their goal grow even faster
-            const nearGoalFactor = financials >= investedAmount * 10 ? 0.25 : (financials >= investedAmount * 50 ? 0.5 : 0);
-            growthFactor += nearGoalFactor;
+            // Evaluate progress after 30 seconds
+            const progressThreshold = 0.10; // e.g., 10% of target goal
+            if (countdown === 0 && financials / goal >= progressThreshold) {
+                // Mark as success if threshold reached
+                startup.financials = goal;
+                capital += startup.financials; // Add gains
+                alert(`${startup.name} reached its target!`);
+            } else if (countdown === 0) {
+                // Random resolution (30% chance of success)
+                if (Math.random() < 0.3) {
+                    startup.financials = goal;
+                    capital += startup.financials; // Add gains
+                    alert(`${startup.name} succeeded randomly!`);
+                } else {
+                    startup.financials = 0; // Company failed
+                    alert(`${startup.name} failed to reach its target.`);
+                }
+            }
 
             // If the company hasn't yet reached 100x the investment, continue growing
             if (financials > 0 && financials < investedAmount * 100) {
                 startup.financials += growthFactor;
                 allResolved = false;
-            } 
-            // Company IPO or reached the goal of 100x return
-            else if (financials >= investedAmount * 100) {
+            } else if (financials >= investedAmount * 100) {
                 capital += startup.financials;
                 alert(`Unicorn! ${startup.name} returned 100x its investment!`);
             }
@@ -368,7 +381,7 @@ function monitorPortfolio() {
             clearInterval(monitorInterval);
             handleEndOfRound();
         }
-    }, 30); // Faster updates (in ms)
+    }, 30); // fast ms
 }
 
 // End of round handling
@@ -402,9 +415,39 @@ elements.closeInstructionsButton.addEventListener('click', () => elements.instru
 
 // Ensure Start button is always visible, and triggers the first pitch
 elements.startButton.addEventListener('click', () => {
-    elements.startButton.style.display = 'none'; // Hide the start button once clicked
-    nextStartup(); // Start the first startup pitch
+  // elements.startButton.style.display = 'none'; // Hide the start button once clicked
+  // nextStartup(); // Start the first startup pitch
+  if (gameStarted) {
+    const confirmReset = confirm("Are you sure you want to reset the game?");
+    if (confirmReset) {
+      resetGame();
+    }
+  } else {
+    startGame();
+  }
 });
+
+function startGame() {
+    gameStarted = true;
+    elements.startButton.innerText = "Start a New Game";
+    nextStartup(); // Start first startup pitch
+}
+
+function resetGame() {
+    // Reset game state and variables
+    capital = initialCapital;
+    firmValuation = 1000000;
+    currentRound = 1;
+    portfolio = [];
+    monitoringPortfolio = false;
+    gameStarted = false;
+    elements.capitalDisplay.innerText = `$${capital.toLocaleString()}K`;
+    elements.valuationDisplay.innerText = `$1M`;
+    elements.portfolioList.innerHTML = '';
+    elements.newsSection.innerText = '';
+    elements.startButton.innerText = "Start Game";
+    stopTimer(); // Stop any running timer
+}
 
 // Check for game over
 function checkGameOver() {

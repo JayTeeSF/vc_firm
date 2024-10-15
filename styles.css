@@ -13,6 +13,30 @@ header {
     align-items: center;
 }
 
+/* styles.css: Style adjustments for start button */
+#startButton {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 100;
+}
+
+#startButton:hover {
+    background-color: #218838;
+}
+
+#startButton:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
 #showInstructions {
     background-color: #17a2b8;
     color: white;
