@@ -1,46 +1,81 @@
-Prompt for Building a VC Investment Game
+VC Investment Game Development
+Overview: You are tasked with building an interactive, dynamic, web-based VC Investment Game where players take on the role of venture capitalists (VCs). The goal is to evaluate startup pitches, decide whether to invest or pass, and manage a portfolio of growing companies over multiple funding rounds. The game simulates a VC’s journey through Series-A, Series-B, and Series-C rounds, with the ultimate goal of growing companies to IPO.
 
-Overview:
-You are tasked with developing an interactive web-based VC Investment Game where players act as venture capitalists (VCs), making investment decisions based on startup pitches. Players can review multiple metrics, invest in or pass on startups, and their portfolio grows or shrinks based on how well their chosen startups perform. The game should include dynamic elements like news events that affect sectors and show clear, impactful outcomes of investments.
+The player starts with a set amount of capital, and the game progresses through rounds, where new investment opportunities are presented and portfolio companies are monitored over time. The game should feel dynamic, fast-paced, and exciting, with startups showing dramatic shifts in value based on team quality, market conditions, and news events. A strong visual component using dynamic charts is essential.
 
 Key Features:
-Startups and Metrics:
-Each startup will display the following metrics in a visually engaging manner using charts:
+Startups and Metrics: Each startup pitch includes the following metrics, displayed using dynamic charts:
 
-Market Size (in millions): Reflects the target market.
-Team Experience (scale 1-10): Reflects the startup team's quality.
-Financials (in millions): Reflects the company's current profit/loss. Positive numbers mean profitability; negative numbers indicate losses.
+Market Size (in millions): Reflects the market opportunity for the startup.
+Team Experience (scale 1-10): Reflects the strength of the startup’s team.
+Financials (in millions): Reflects the company’s current profit or loss. Positive numbers represent profit, negative numbers represent loss.
 Investment Details:
-Each startup pitch should include a requested investment amount, which the player can view before choosing to invest. The game should prevent over-investment (i.e., if the requested amount exceeds the available capital). If a player does not have enough funds, the game should automatically allow for partial investment and inform the player of the remaining capital being invested.
 
+Each startup pitch includes a requested investment amount.
+Players can invest or pass on the pitch. If they invest, the amount is deducted from the capital. The player cannot reinvest in the same startup.
+If the requested investment exceeds available capital, allow partial investment and inform the player.
+The game should prevent over-investment (investing more than the available capital).
+Rounds and Series Progression:
+
+The game consists of three rounds: Series-A, Series-B, and Series-C.
+Each round increases in investment requirements and growth multipliers (e.g., Series-A might need $50K-250K investment, Series-C $1M+).
+If any Series-C company reaches its target goal, it IPO’s and the player wins the game.
 News Events:
-Random news events should appear during the game, affecting specific sectors (e.g., Tech, Healthcare, Energy). These events should positively or negatively impact the financials of all companies in the affected sector, dynamically adjusting the returns in the portfolio (a one-time increase / decrease when the news is displayed).
 
-Portfolio Management:
-Players should be able to see all companies they’ve invested in within the Portfolio section. This section must clearly show:
+Dynamic news events should randomly affect the financials of companies based on their sector (e.g., “Tech boom boosts financials by 20%” or “Energy crisis reduces financials by 10%”).
+Companies close to their target should become more resilient to negative news and more likely to grow positively.
+Portfolio Management and Monitoring:
 
-Company name.
-Sector.
-Market Size.
-Team Experience.
-Current Financials (showing gains or losses).
+Players can view their portfolio, which should include:
+Unique company names (randomly generated).
+Sector (e.g., Tech, Healthcare, Energy).
+Market Size, Team Experience, Financials, and Investment Goals.
+Monitor the portfolio after capital is depleted, allowing for a 30-second period where company financials fluctuate dynamically based on random growth factors and news.
+After 30 seconds, the game resolves all remaining companies in the portfolio (i.e., they either succeed or fail based on thresholds).
+Display a summary at the end of each round that details which companies succeeded, failed, or went IPO. The player's capital should increase based on profits from successful investments.
+Dynamic Visuals and Charts:
+
+For each new startup pitch, display three charts showing Market Size, Team Experience, and Financials.
+These charts should clear and refresh for each new pitch to prevent data stacking.
+Charts should update during the monitoring phase, showing companies dynamically fluctuating in value.
+Game Progression:
+
+Players progress from Series-A to Series-B and Series-C. If a company reaches its target in Series-C, it IPOs, and the player wins.
+If all investments fail, after the player’s capital hits zero, the game ends, and the player loses.
 Capital and Firm Valuation:
-The player's capital and overall firm valuation should be prominently displayed. Capital will decrease with each investment, while firm valuation will reflect the growth or decline of the portfolio over time.
 
+Display capital and firm valuation prominently. Firm valuation should be updated based on portfolio performance.
+After each round, update the capital based on profits from successful investments.
+If a company reaches 100x its investment, the player receives those gains as capital for the next round.
 Timing Mechanism:
-A countdown timer (default: 30 seconds) should be displayed for each startup pitch. The timer should pause when the player makes a decision (either Invest or Pass). If the timer runs out without a decision, the game should auto-pass the startup and move on to the next.
 
-What To Do:
-Charts and UI: Each startup pitch should dynamically render its respective charts (Market Size, Team Experience, Financials). Ensure the charts clear between different startups to avoid stacking data from previous pitches.
-Requested Investment: Display the requested investment clearly with each new pitch, ensuring that it resets for each new startup.
-Partial Investments: If the player has less capital than the requested investment, allow partial investment of whatever funds remain. Do not block the game if full investment is impossible.
-Dynamic News: Incorporate news events that affect sector performance. Ensure that when a news event occurs, it modifies the financial returns of the companies the VC (player) has invested-in within the same sector as the announcement (no impact on future startups).
-Portfolio Updates: Ensure the portfolio reflects ongoing performance changes based on news events or sector performance. Show gains and losses clearly in the Portfolio section.
-Decision Handling: Once the player clicks Invest or Pass, display appropriate messages (e.g., "You invested X amount in this startup" or "You passed on this startup") and move to the next startup without errors.
-What Not to Do:
-No Data Stacking: Ensure that the requested investments or charts do not pile up when a new startup is shown. Always clear the old data before displaying the new.
-Do Not Block on Full Investment: Do not stop the game if the requested investment exceeds the player's available capital. Implement partial investments instead.
-No Unused News: Ensure that news events always trigger a sector impact. Do not display news if there’s no effect on the financials.
-Avoid Timer Errors: Ensure the timer resets correctly for each startup and pauses when an investment or pass is made.
-No Unclear Investment Details: Do not delay showing the requested investment until after the player clicks Invest. The requested investment must be part of the pitch upfront.
+The game uses two timers:
+A pitch timer (default 30 seconds) for deciding to invest or pass on new startups.
+A monitoring timer (default 30 seconds) to track portfolio performance once capital is depleted.
+The player can’t invest after capital reaches $0 until the portfolio resolves.
+Round Management:
+
+After all companies resolve for a round, provide a summary alert showing which companies succeeded and how much capital was gained. Then move to the next round (Series-B, Series-C).
+After Series-C, if any companies reach their goal, they should IPO, and the game ends with a win.
+Resolution Mechanism:
+
+Monitor Portfolio: Once capital hits zero, monitor portfolio performance for 30 seconds. Companies should show dynamic growth or decline during this period.
+After 30 seconds, resolve all remaining companies. Companies within 10% of their goal should automatically succeed, while others have a 30% random chance of succeeding.
+Show a single summary alert at the end of the round detailing which companies succeeded and the resulting gains to the player’s capital.
+Bugs/Issues to Avoid:
+Ensure Portfolio Monitoring runs dynamically for 30 seconds with visible fluctuations in company financials (before resolving).
+Ensure there are no duplicate company names.
+Avoid too many alert boxes. Instead, show one alert summarizing the outcome at the end of each round.
+Ensure the game progresses smoothly from Series-A to Series-B and Series-C.
+Fix issues with timers overlapping or failing to run correctly during the monitoring phase.
+Ensure capital and company financials are updated correctly after each round.
+Avoid the game getting stuck in round loops or displaying incorrect results when progressing to Series-B or Series-C.
+Key Code Functionalities:
+Startup generation: Use random but unique names and display their key metrics.
+Investment logic: Handle investments, prevent over-investment, and manage partial investments.
+News events: Dynamically impact portfolio companies based on random news events in their sector.
+Portfolio resolution: After the monitoring period, resolve all companies and update capital based on success.
+Timers: Ensure separate timers for pitching and portfolio monitoring. Ensure they run and reset correctly.
+By following this prompt and refining the current implementation, you should be able to deliver a fully-functional, engaging VC Investment game that runs smoothly across all rounds and dynamically shows the effects of investments, news, and market forces.
+
 
