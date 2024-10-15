@@ -400,19 +400,23 @@ elements.showInstructionsButton.addEventListener('click', () => {
 });
 elements.closeInstructionsButton.addEventListener('click', () => elements.instructionsModal.style.display = 'none');
 
-// Check for game over
-function checkGameOver() {
-    if (capital <= 0 && portfolioInstance.allFailed()) {
-        alert("You lose: all your investments failed.");
-    } else {
-        elements.nextStartupButton.disabled = true;
-        elements.investButton.disabled = true;
-        elements.passButton.disabled = true;
-    }
-}
-
 // Ensure Start button is always visible, and triggers the first pitch
 elements.startButton.addEventListener('click', () => {
     elements.startButton.style.display = 'none'; // Hide the start button once clicked
     nextStartup(); // Start the first startup pitch
 });
+
+// Check for game over
+function checkGameOver() {
+    if (capital <= 0 && portfolioInstance.allFailed()) {
+        alert("You lose: all your investments failed.");
+        elements.nextStartupButton.disabled = true;
+        elements.investButton.disabled = true;
+        elements.passButton.disabled = true;
+    } else if (portfolioInstance.hasIPO()) {
+        alert("You win!!! Your company successfully IPO'd.");
+        elements.nextStartupButton.disabled = true;
+        elements.investButton.disabled = true;
+        elements.passButton.disabled = true;
+    }
+}
