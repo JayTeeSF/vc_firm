@@ -40,7 +40,7 @@ const elements = {
     newsSection: document.getElementById('news-list'),
     instructionsModal: document.getElementById('instructions-modal'),
     showInstructionsButton: document.getElementById('showInstructions'),
-    // closeInstructionsButton: document.getElementById('closeInstructions'),
+    closeInstructionsButton: document.getElementById('closeInstructions'),
     startButton: document.getElementById('startButton') // Added start button element
 };
 
@@ -223,8 +223,9 @@ function nextStartup() {
 }
 
 function createRandomStartup() {
-    const seriesRound = seriesRounds[`Series-${String.fromCharCode(64 + currentRound)}`];
-    if (!seriesRound) throw new GameError("Invalid series round data", { currentRound });
+    const seriesRound = seriesRounds[`Series-${String.fromCharCode(64 + currentRound)}`] || {
+        minInvestment: 5000000, maxInvestment: 10000000, targetMultiplier: 1000
+    };
 
     const sector = sectors[Math.floor(Math.random() * sectors.length)];
     const name = generateUniqueStartupName();
@@ -288,13 +289,64 @@ function startTimer() {
         elements.timeLeftDisplay.innerText = countdown;
         if (countdown <= 0) {
             clearInterval(currentTimer);
-            handleTimeout();
+            resolvePortfolio();
         }
     }, 1000);
 }
 
 function stopTimer() {
     clearInterval(currentTimer);
+}
+
+// Resolve the portfolio after 30s
+function resolvePortfolio() {
+    portfolioInstance.startups.forEach(startup => {
+        const { financials, goal } = startup;
+
+        // Check if the company is near its goal (e.g., within 10%)
+        const nearGoalThreshold = 0.10;
+        if (financials / goal >= nearGoalThreshold) {
+            startup.financials = goal; // Mark as successful
+            capital += startup.financials; // Add financials to capital
+            alert(`${startup.name} reached its target successfully!`);
+        } else {
+            // Give the company a 30% chance of success
+            if (Math.random() < 0.3) {
+                startup.financials = goal;
+                capital += startup.financials; // Add gains
+                alert(`${startup.name} succeeded randomly!`);
+            } else {
+                startup.financials = 0; // Company failed
+                alert(`${startup.name} failed to reach its target.`);
+            }
+        }
+    });
+
+    updatePortfolio();
+    handleEndOfRound();
+}
+
+// End of round handling
+function handleEndOfRound() {
+    if (capital <= 0 && portfolioInstance.allFailed()) {
+        alert("You lose: all your investments failed.");
+        elements.nextStartupButton.disabled = true;
+        elements.investButton.disabled = true;
+        elements.passButton.disabled = true;
+    } else if (portfolioInstance.hasIPO()) {
+        alert("You win!!! Your company successfully IPO'd.");
+        elements.nextStartupButton.disabled = true;
+        elements.investButton.disabled = true;
+        elements.passButton.disabled = true;
+    } else {
+        alert(`Round ${currentRound} is complete! Your new capital is $${capital.toLocaleString()}. Starting next round.`);
+        currentRound++;
+        monitoringPortfolio = false;
+        portfolioInstance.startups = [];
+        elements.investButton.disabled = false;
+        elements.passButton.disabled = false;
+        nextStartup();
+    }
 }
 
 // Handle investments and button click
@@ -325,101 +377,18 @@ elements.investButton.addEventListener('click', debounce(() => {
     } else {
         nextStartup(); // Automatically move to the next startup
     }
-}, 300)); // Debounced click event
-
-// Monitor portfolio growth
-// Timer function to trigger resolution after 30 seconds
-function monitorPortfolio() {
-    monitoringPortfolio = true;
-    const fastInterval = 30; // Interval of 30ms
-    const monitorInterval = setInterval(() => {
-        let allResolved = true;
-        portfolioInstance.startups.forEach(startup => {
-            const { investedAmount, teamExperience, financials, goal } = startup;
-
-            // Calculate growth factor with a higher chance of success for better teams
-            let growthFactor = (Math.random() * 10 - 5); // Base random growth factor (-5 to 5)
-            const successChance = teamExperience / 10;
-            const growthAdjustment = Math.random() < successChance ? Math.random() * 5 : Math.random() * -5;
-            growthFactor += growthAdjustment;
-
-            const progressThreshold = 0.10; // 10% of the target goal
-            if (countdown <= 20 && financials / goal >= progressThreshold) {
-                startup.financials = goal;
-                capital += startup.financials;
-                alert(`${startup.name} reached its target quickly!`);
-            } else if (countdown === 0) {
-                // Final resolution: 30% chance of success after 30 seconds
-                if (Math.random() < 0.3) {
-                    startup.financials = goal;
-                    capital += startup.financials;
-                    alert(`${startup.name} succeeded randomly!`);
-                } else {
-                    startup.financials = 0;
-                    alert(`${startup.name} failed.`);
-                }
-            }
-
-            // Continue growth if not yet successful
-            if (financials > 0 && financials < investedAmount * 100) {
-                startup.financials += growthFactor;
-                allResolved = false;
-            } else if (financials >= investedAmount * 100) {
-                capital += startup.financials;
-                alert(`Unicorn! ${startup.name} returned 100x its investment!`);
-            }
-        });
-
-        updatePortfolio();
-        elements.capitalDisplay.innerText = `$${capital.toLocaleString()}K`;
-
-        // Check if all companies are resolved
-        if (allResolved) {
-            clearInterval(monitorInterval);
-            handleEndOfRound();
-        }
-    }, fastInterval); // 30ms updates
-}
-
-// End of round handling
-function handleEndOfRound() {
-    if (capital <= 0 && portfolioInstance.allFailed()) {
-        alert("You lose: all your investments failed.");
-    } else if (portfolioInstance.hasIPO()) {
-        alert("You win!!! Your company successfully IPO'd.");
-    } else {
-        alert(`Round ${currentRound} is complete! Your new capital is $${capital.toLocaleString()}. Starting next round.`);
-        currentRound++;
-        monitoringPortfolio = false;
-        elements.investButton.disabled = false;
-        elements.passButton.disabled = false;
-        nextStartup();
-    }
-}
-
-// Timer-related timeout handler
-function handleTimeout() {
-    alert("Time's up! Moving to the next startup.");
-    nextStartup();
-}
-
-// Event Listeners
-elements.nextStartupButton.addEventListener('click', nextStartup);
-elements.showInstructionsButton.addEventListener('click', () => {
-    elements.instructionsModal.style.display = elements.instructionsModal.style.display === 'none' || elements.instructionsModal.style.display === '' ? 'flex' : 'none';
-});
-// elements.closeInstructionsButton.addEventListener('click', () => elements.instructionsModal.style.display = 'none');
+}, 300));
 
 // Ensure Start button is always visible, and triggers the first pitch
 elements.startButton.addEventListener('click', () => {
-  if (gameStarted) {
-    const confirmReset = confirm("Are you sure you want to reset the game?");
-    if (confirmReset) {
-      resetGame();
+    if (gameStarted) {
+        const confirmReset = confirm("Are you sure you want to reset the game?");
+        if (confirmReset) {
+            resetGame();
+        }
+    } else {
+        startGame();
     }
-  } else {
-    startGame();
-  }
 });
 
 function startGame() {
@@ -443,17 +412,9 @@ function resetGame() {
     stopTimer(); // Stop any running timer
 }
 
-// Check for game over
-function checkGameOver() {
-    if (capital <= 0 && portfolioInstance.allFailed()) {
-        alert("You lose: all your investments failed.");
-        elements.nextStartupButton.disabled = true;
-        elements.investButton.disabled = true;
-        elements.passButton.disabled = true;
-    } else if (portfolioInstance.hasIPO()) {
-        alert("You win!!! Your company successfully IPO'd.");
-        elements.nextStartupButton.disabled = true;
-        elements.investButton.disabled = true;
-        elements.passButton.disabled = true;
-    }
-}
+// Event Listeners
+elements.nextStartupButton.addEventListener('click', nextStartup);
+elements.showInstructionsButton.addEventListener('click', () => {
+    elements.instructionsModal.style.display = elements.instructionsModal.style.display === 'none' || elements.instructionsModal.style.display === '' ? 'flex' : 'none';
+});
+elements.closeInstructionsButton.addEventListener('click', () => elements.instructionsModal.style.display = 'none');
