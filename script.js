@@ -40,7 +40,8 @@ const elements = {
     newsSection: document.getElementById('news-list'),
     instructionsModal: document.getElementById('instructions-modal'),
     showInstructionsButton: document.getElementById('showInstructions'),
-    closeInstructionsButton: document.getElementById('closeInstructions')
+    closeInstructionsButton: document.getElementById('closeInstructions'),
+    startButton: document.getElementById('startButton') // Added start button element
 };
 
 // GameError for better error handling
@@ -270,7 +271,7 @@ function updatePortfolio() {
         const li = document.createElement('li');
         li.innerHTML = `<strong style="color: ${color}">${startup.name}</strong> - ${startup.sector} - Market Size: ${startup.marketSize}M, 
                         Team Experience: ${startup.teamExperience}/10, 
-                        <strong>Financials: $${startup.financials.toLocaleString()}M</strong>, 
+                        <strong>Financials: $${startup.financials.toLocaleString()}M (Goal: $${startup.goal.toLocaleString()}M)</strong>, 
                         Invested: $${startup.investedAmount.toLocaleString()}`;
         elements.portfolioList.appendChild(li);
     });
@@ -409,3 +410,9 @@ function checkGameOver() {
         elements.passButton.disabled = true;
     }
 }
+
+// Ensure Start button is always visible, and triggers the first pitch
+elements.startButton.addEventListener('click', () => {
+    elements.startButton.style.display = 'none'; // Hide the start button once clicked
+    nextStartup(); // Start the first startup pitch
+});
