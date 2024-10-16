@@ -187,7 +187,7 @@ function renderAllCharts(startup) {
             activeCharts = [];
         }
         activeCharts.push(renderChart('marketSizeChart', `Market Size: ${startup.marketSize}M`, startup.marketSize, 1000, '#007bff'));
-        activeCharts.push(renderChart('teamExperienceChart', `Team Experience: ${startup.teamExperience}/10`, startup.teamExperience, 10, '#28a745'));
+        activeCharts.push(renderChart('teamExperienceChart', `Team: ${startup.teamExperience}/10`, startup.teamExperience, 10, '#28a745'));
         activeCharts.push(renderChart('financialsChart', `Financials: ${startup.financials}M`, startup.financials, undefined, startup.financials >= 0 ? '#ffc107' : '#dc3545'));
     } catch (error) {
         console.error("Error rendering charts:", error);
@@ -283,16 +283,16 @@ function applyRandomNewsEvent() {
 
 // Portfolio updates and display
 function updatePortfolio() {
-    elements.portfolioList.innerHTML = '';
-    portfolioInstance.startups.forEach(startup => {
-        const color = startup.financials >= startup.investedAmount * 100 ? 'blue' : (startup.financials <= 0 ? 'red' : 'black');
-        const li = document.createElement('li');
-        li.innerHTML = `<strong style="color: ${color}">${startup.name}</strong> - ${startup.sector} - Market Size: ${startup.marketSize}M, 
-                        Team Experience: ${startup.teamExperience}/10, 
-                        <strong>Financials: $${startup.financials.toLocaleString()}M (Goal: $${startup.goal.toLocaleString()}M)</strong>, 
-                        Invested: $${startup.investedAmount.toLocaleString()}`;
-        elements.portfolioList.appendChild(li);
-    });
+  elements.portfolioList.innerHTML = '';
+  portfolioInstance.startups.forEach((startup) => {
+    const color = startup.financials >= startup.investedAmount * 100 ? 'blue' : (startup.financials <= 0 ? 'red' : 'black');
+    const li = document.createElement('li');
+    li.innerHTML = `<strong style="color: ${color}">${startup.name}</strong> - ${startup.sector} - Market Size: ${startup.marketSize}M, 
+                    Team: ${startup.teamExperience}/10, 
+                    <strong>Financials: $${startup.financials.toLocaleString()}M (Goal: $${startup.goal.toLocaleString()}M)</strong>, 
+                    Invested: $${startup.investedAmount.toLocaleString()}`;
+    elements.portfolioList.appendChild(li);
+  });
 }
 
 // Timer management
