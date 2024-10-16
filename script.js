@@ -214,7 +214,7 @@ function disableButtons() {
     elements.nextStartupButton.disabled = true; // Disable next startup button as well
 }
 
-// Startup generation and chart display
+// Startup generation and chart display Refactored the startup flow to ensure the button state is consistent
 function nextStartup() {
     try {
         if (capital > 0) {
@@ -237,6 +237,7 @@ function nextStartup() {
     } catch (error) {
         console.error("Error during next startup:", error);
         alert("Something went wrong when loading the next startup. Please refresh or try again.");
+        disableButtons(); // Ensure buttons are disabled on failure to prevent multiple clicks
     }
 }
 
@@ -510,4 +511,14 @@ elements.nextStartupButton.addEventListener('click', () => {
     } else {
         checkGameOver();  // Check if the game is over if capital is zero
     }
+});
+
+// Handle "Show Instructions" button toggle functionality
+elements.showInstructionsButton.addEventListener('click', () => {
+  // Check if the modal is currently visible, and toggle its visibility
+  if (elements.instructionsModal.style.display === 'block') {
+    elements.instructionsModal.style.display = 'none';  // Hide if visible
+  } else {
+    elements.instructionsModal.style.display = 'block'; // Show if hidden
+  }
 });
