@@ -216,29 +216,39 @@ function disableButtons() {
 
 // Startup generation and chart display Refactored the startup flow to ensure the button state is consistent
 function nextStartup() {
-    try {
-        if (capital > 0) {
-            stopTimer();
-            enableButtons(); // Re-enable buttons
+  try {
+    console.log('Starting nextStartup function. Current capital:', capital); // Added log
 
-            currentStartup = createRandomStartup();
-            if (!currentStartup) {
-                throw new GameError("Failed to generate startup data.", { round: currentRound });
-            }
+    if (capital > 0) {
+      stopTimer();
+      enableButtons(); // Re-enable buttons only when necessary
 
-            renderAllCharts(currentStartup);
-            clearPreviousInvestment();
-            displayInvestmentRequest(currentStartup.investmentRequired);
-            applyRandomNewsEvent();
-            startTimer();
-        } else {
-            checkGameOver();
-        }
-    } catch (error) {
-        console.error("Error during next startup:", error);
-        alert("Something went wrong when loading the next startup. Please refresh or try again.");
-        disableButtons(); // Ensure buttons are disabled on failure to prevent multiple clicks
+      // Release memory for skipped companies to avoid memory overload
+      if (currentStartup) {
+        // Remove the previous startup's reference if it was skipped
+        currentStartup = null;
+      }
+
+      currentStartup = createRandomStartup();
+      if (!currentStartup) {
+        throw new GameError('Failed to generate startup data.', { round: currentRound });
+      }
+      console.log('New startup generated:', currentStartup); // Added log
+
+      renderAllCharts(currentStartup);
+      clearPreviousInvestment();
+      displayInvestmentRequest(currentStartup.investmentRequired);
+      applyRandomNewsEvent();
+      startTimer();
+    } else {
+      console.log('No capital left, checking for game over.'); // Added log
+      checkGameOver(); // Capital is 0, we check if game is over
     }
+  } catch (error) {
+    console.error('Error during next startup:', error);
+    alert('Something went wrong when loading the next startup. Please refresh or try again.');
+    disableButtons(); // Ensure buttons are disabled on failure to prevent multiple clicks
+  }
 }
 
 function createRandomStartup() {
@@ -269,8 +279,11 @@ function displayInvestmentRequest(investment) {
 }
 
 function clearPreviousInvestment() {
-    const prevInvestment = document.getElementById('investmentPitch');
-    if (prevInvestment) prevInvestment.remove();
+  const prevInvestment = document.getElementById('investmentPitch');
+  if (prevInvestment) prevInvestment.remove();
+
+  // Free memory for any previous investment
+  currentStartup = null;
 }
 
 // Apply random news event
@@ -426,21 +439,22 @@ function resolveRemainingPortfolio() {
 
 // Function to check game over and handle end of round logic
 function checkGameOver() {
-    if (capital <= 0 && portfolioInstance.allFailed()) {
-        alert("Game Over! You have no capital left and all your investments failed.");
-        disableButtons();  // Disable buttons since the game is over
-    } else if (portfolioInstance.hasIPO()) {
-        alert("You win!!! Your company successfully IPO'd.");
-        disableButtons();  // Disable buttons since the game is over
-    } else {
-        // Refill capital from successful investments and move to next round
-        alert(`Round ${currentRound} is complete! Your new capital is $${capital.toLocaleString()}. Starting next round.`);
-        currentRound++;
-        monitoringPortfolio = false;
-        portfolioInstance.startups = [];
-        enableButtons(); // Re-enable buttons for the next round
-        nextStartup();
-    }
+  if (capital <= 0 && portfolioInstance.allFailed()) {
+    alert('Game Over! You have no capital left and all your investments failed.');
+    disableButtons();  // Disable buttons since the game is over
+  } else if (portfolioInstance.hasIPO()) {
+    alert("You win!!! Your company successfully IPO'd.");
+    disableButtons();  // Disable buttons since the game is over
+  } else {
+    console.log('Function. Current capital:', capital);
+    // Refill capital from successful investments and move to next round
+    alert(`Round ${currentRound} is complete! Your new capital is $${capital.toLocaleString()}. Starting next round.`);
+    currentRound += 1;
+    monitoringPortfolio = false;
+    portfolioInstance.startups = [];
+    enableButtons(); // Re-enable buttons for the next round
+    nextStartup();
+  }
 }
 
 // End of round handling
@@ -475,42 +489,47 @@ elements.startButton.addEventListener('click', () => {
 
 // Function to reset the game state
 function resetGame() {
-    capital = initialCapital;
-    firmValuation = 1000000;
-    currentRound = 1;
-    portfolio = [];
-    monitoringPortfolio = false;
-    gameStarted = false;
-    elements.capitalDisplay.innerText = `$${capital.toLocaleString()}K`;
-    elements.valuationDisplay.innerText = `$1M`;
-    elements.portfolioList.innerHTML = '';
-    elements.newsSection.innerText = '';
-    elements.startButton.innerText = "Start Game";
-    stopTimer();  // Stop any running timer
-    disableButtons();  // Disable buttons until game is started
+  capital = initialCapital;
+  firmValuation = 1000000;
+  currentRound = 1;
+  portfolio = [];
+  monitoringPortfolio = false;
+  gameStarted = false;
+  elements.capitalDisplay.innerText = `$${capital.toLocaleString()}K`;
+  elements.valuationDisplay.innerText = '$1M';
+  elements.portfolioList.innerHTML = '';
+  elements.newsSection.innerText = '';
+  elements.startButton.innerText = 'Start Game';
+  stopTimer();  // Stop any running timer
+  disableButtons();  // Disable buttons until game is started
 }
 
 // Function to start the game
 function startGame() {
-    gameStarted = true;
-    elements.startButton.innerText = "Start a New Game";
-    nextStartup();  // Start first startup pitch
+  gameStarted = true;
+  elements.startButton.innerText = "Next Game";
+  nextStartup();  // Start first startup pitch
 }
 
 // Handle "Pass" button functionality
 elements.passButton.addEventListener('click', debounce(() => {
-    alert("You passed on this startup.");
-    disableButtons();  // Disable buttons after making a decision
-    nextStartup();  // Move to the next startup
+  alert('You passed on this startup.');
+
+  // Free the reference to the current startup
+  currentStartup = null;
+
+  disableButtons();  // Disable buttons after making a decision
+  nextStartup();  // Move to the next startup
 }, 300)); // Debounced click event
 
 // Handle "Next Startup" button functionality
 elements.nextStartupButton.addEventListener('click', () => {
-    if (capital > 0) {
-        nextStartup();  // Trigger next startup only if capital is available
-    } else {
-        checkGameOver();  // Check if the game is over if capital is zero
-    }
+  console.log('Pitching nextStartup');
+  if (capital > 0) {
+    nextStartup();  // Trigger next startup only if capital is available
+  } else {
+    checkGameOver();  // Check if the game is over if capital is zero
+  }
 });
 
 // Handle "Show Instructions" button toggle functionality
