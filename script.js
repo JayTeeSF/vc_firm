@@ -447,13 +447,6 @@ function checkGameOver() {
     disableButtons();  // Disable buttons since the game is over
   } else {
     console.log('Function. Current capital:', capital);
-    // Refill capital from successful investments and move to next round
-    // Calculate the capital based on the success of startups in the portfolio
-+    portfolioInstance.startups.forEach(startup => {
-+      if (startup.financials > 0) {
-+        capital += startup.financials;
-+      }
-+    }); 
     alert(`Round ${currentRound} is complete! Your new capital is $${capital.toLocaleString()}. Starting next round.`);
     currentRound += 1;
     monitoringPortfolio = false;
@@ -472,12 +465,19 @@ function handleEndOfRound() {
         alert("You win!!! Your company successfully IPO'd.");
         disableButtons(); // Disable all buttons since the game is over
     } else {
-        alert(`Round ${currentRound} is complete! Your new capital is $${capital.toLocaleString()}. Starting next round.`);
-        currentRound++;
-        monitoringPortfolio = false;
-        portfolioInstance.startups = [];
-        enableButtons(); // Re-enable buttons for the next round
-        nextStartup(); // Proceed to the next startup
+      // Refill capital from successful investments and move to next round
+      // Calculate the capital based on the success of startups in the portfolio
+      portfolioInstance.startups.forEach(startup => {
+        if (startup.financials > 0) {
+          capital += startup.financials;
+        }
+      }); 
+      alert(`Round ${currentRound} is complete! Your new capital is $${capital.toLocaleString()}. Starting next round.`);
+      currentRound++;
+      monitoringPortfolio = false;
+      portfolioInstance.startups = [];
+      enableButtons(); // Re-enable buttons for the next round
+      nextStartup(); // Proceed to the next startup
     }
 }
 
