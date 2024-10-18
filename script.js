@@ -223,10 +223,9 @@ function nextStartup() {
       stopTimer();
       enableButtons(); // Re-enable buttons only when necessary
 
-      // Release memory for skipped companies to avoid memory overload
+      // Only clear currentStartup AFTER rendering or when moving on to the next one
       if (currentStartup) {
-        // Remove the previous startup's reference if it was skipped
-        currentStartup = null;
+        console.log('Clearing previous startup reference.');
       }
 
       currentStartup = createRandomStartup();
@@ -235,9 +234,9 @@ function nextStartup() {
       }
       console.log('New startup generated:', currentStartup); // Added log
 
-      renderAllCharts(currentStartup);
-      clearPreviousInvestment();
-      displayInvestmentRequest(currentStartup.investmentRequired);
+      renderAllCharts(currentStartup); // Renders charts
+      clearPreviousInvestment(); // Safe to call after charts are rendered
+      displayInvestmentRequest(currentStartup.investmentRequired); // Ensure investmentRequired is accessed safely
       applyRandomNewsEvent();
       startTimer();
     } else {
@@ -282,8 +281,9 @@ function clearPreviousInvestment() {
   const prevInvestment = document.getElementById('investmentPitch');
   if (prevInvestment) prevInvestment.remove();
 
-  // Free memory for any previous investment
-  currentStartup = null;
+  // Do not set currentStartup to null here as it is still being processed
+  // Removing this ensures that currentStartup remains valid during the entire flow.
+  console.log('Cleared previous investment pitch.');
 }
 
 // Apply random news event
